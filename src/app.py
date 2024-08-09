@@ -38,12 +38,55 @@ def sitemap():
 
 @app.route('/user', methods=['GET'])
 def handle_hello():
+    
+    usuarios = User()
+    usuarios = usuarios.query.all()
+    usuarios = list(map(lambda item: item.serializar(),usuarios))
+    print(usuarios) 
+    return jsonify(usuarios), 200
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
+@app.route('/user/<int:id>', methods=['GET'])
+def buscar_id(id = None):
+    if id is not None:
+        usuario = User()
+        usuario = usuario.query.get(id)
 
-    return jsonify(response_body), 200
+        if usuario is not None:
+            return jsonify(usuario.serializar()),200
+        else:
+            return  jsonify({"Mensaje": "usuario no encontrado"}),404
+    # return jsonify([]),200
+
+
+@app.route('/user', methods=['POST'])
+def agregar_usuario():
+
+    data = request.json
+    if data.get("nombre") is None:
+        return jsonify({"mensasje":"debes enviar un nombre"}),400
+    elif data.get("apellido") is None:
+        return jsonify({"Mensaje": "debes enviar un apellido"}),400
+    elif data.get("correo") is None:
+        return jsonify({"Mensaje": "Debes enviar un correon electronico"}),400
+    else:
+
+        # valida si alguiene esta registrado 
+        usuario = User()
+        correo_usuario = usuario.query.filter_by(correo = data['correo'])
+        if correo_usuario is None:
+
+            usuario = User(nombre_usuario = data["nombre"],apellido = data["apellido"],correo = data["correo"])
+            db.session.add(usuario)
+            try:
+                db.session.commit()
+                return jsonify({"mensaje": "usuario guardado con exito!"}),201
+            except Exception as error:
+                print(error)
+                db.session.rollback()
+                return jsonify({"mensaje": f"error {error.args} "}),500
+        else:
+            return jsonify({"Mensaje":"EL usuario existe"}),400  
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
