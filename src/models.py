@@ -1,9 +1,13 @@
 from flask_sqlalchemy import SQLAlchemy
-
 db = SQLAlchemy()
 
+# print(f"ESTA ES EL OBJETO SQLAlchemy, {db}")
+# class GenderEnum(db.enum.Enum):
+#     masculino = 'Masculino'
+#     femenino  = 'Femenino'
 
-class User(db.Model):
+
+class Usuario(db.Model):
     __tablename__ = 'usuario'
     id = db.Column(db.Integer, primary_key = True)
     nombre_usuario = db.Column(db.String(50), nullable = False)
@@ -18,25 +22,40 @@ class User(db.Model):
             "correo": self.correo 
         }
 
-class Favoritos(db.Model):
-    __tablename__ = 'favoritos'
+class Planeta(db.Model):
+    __tablename__ = "planeta"
     id = db.Column(db.Integer, primary_key = True)
-    nombre_fav = db.Column(db.String(50), nullable = False)
+    nombre_planera = db.Column(db.String(20),nullable = False)
+    clima = db.Column(db.String(20), nullable = True)
+    creacion_planeta = db.Column(db.String(50), nullable = True)
+    poblacion = db.Column(db.Integer, nullable = True)
+
+class Personaje(db.Model):
+    __tablename__ = 'personaje'
+    id = db.Column(db.Integer, primary_key = True)
+    nombre_personaje = db.Column(db.String(250), nullable = False)
+    anio_nacimiento = db.Column(db.Integer, nullable = True)
+    # gender = enum.Enum(GenderEnum)  
+    estatura = db.Column (db.Float, nullable = True)
+    color_piel = db.Column(db.String(250), nullable = True)
+    color_cabello = db.Column(db.String(250), nullable = True)
+
+class Usuario_Planeta(db.Model):
+    __tablename__ = 'usuarios_planeta'
+    id = db.Column(db.Integer, primary_key = True)
+    usuario_id = db.Column(db.Integer,db.ForeignKey('usuario.id'))
+    planeta_id = db.Column(db.Integer, db.ForeignKey('planeta.id'))
+
+    # RELACIONES PARA LOS ENDPOINTS 
+    usuario = db.relationship('Usuario')
+    planeta = db.relationship('Planeta')
     
+class Usuario_Personaje(db.Model):
+    __tablename__ = 'usuario_personaje'
+    id = db.Column(db.Integer, primary_key = True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
+    personaje_id = db.Column(db.Integer, db.ForeignKey('personaje.id'))
 
-
-# class User(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     email = db.Column(db.String(120), unique=True, nullable=False)
-#     password = db.Column(db.String(80), unique=False, nullable=False)
-#     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
-
-#     def __repr__(self):
-#         return '<User %r>' % self.username
-
-#     def serialize(self):
-#         return {
-#             "id": self.id,
-#             "email": self.email,
-#             # do not serialize the password, its a security breach
-#         } 
+    # RELACIONES PARA LOS ENDPOINTS   
+    usuario = db.relationship('Usuario')
+    personaje = db.relationship('Personaje')
